@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Crazy Quiz</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #eef2ff;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+h1 {
+    text-align: center;
+    font-size: 38px;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #555;
+}
+
+.start-box {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.start-button,
+.next-button,
+.restart-button {
+    border: none;
+    border-radius: 12px;
+    padding: 14px 30px;
+    background: #315bea;
+    color: white;
+    font-size: 17px;
+    cursor: pointer;
+}
+
+.start-button {
+    margin-top: 20px;
+}
+
+#quiz {
+    display: none;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+#question {
+    font-size: 21px;
+    font-weight: bold;
+    line-height: 1.5;
+    margin: 25px 0;
+}
+
+.option {
+    width: 100%;
+    padding: 14px;
+    margin: 7px 0;
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    font-size: 16px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.option:hover {
+    background: #f1f4ff;
+}
+
+.correct {
+    background: #b9f6c0 !important;
+    border-color: #27ae40;
+}
+
+.wrong {
+    background: #ffb7b7 !important;
+    border-color: #e74c3c;
+}
+
+#nextButton {
+    display: none;
+    margin: 20px auto 0;
+}
+
+#result {
+    display: none;
+    text-align: center;
+}
+
+.score {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.category {
+    color: #315bea;
+    font-weight: bold;
+}
+
+.timer {
+    color: #e74c3c;
+}
+
+.restart-button {
+    margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- HOME SCREEN -->
+
+    <div id="home">
+
+        <h1>CRAZY QUIZ</h1>
+
+        <p class="subtitle">
+            Challenge Your Brain
+        </p>
+
+        <div class="start-box">
+
+            <p>🔥 Hard Mode</p>
+            <p>30 Questions</p>
+            <p>10 Seconds Per Question</p>
+
+            <button class="start-button"
+                    onclick="startQuiz()">
+                START QUIZ
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- QUIZ SCREEN -->
+
+    <div id="quiz">
+
+        <div class="top-bar">
+
+            <span id="questionNumber">
+                Question 1/30
+            </span>
+
+            <span class="timer">
+                ⏱ <span id="time">10</span>
+            </span>
+
+        </div>
+
+        <div class="category"
+             id="category">
+        </div>
+
+        <div id="question"></div>
+
+        <div id="options"></div>
+
+        <button id="nextButton"
+                class="next-button"
+                onclick="nextQuestion()">
+            NEXT
+        </button>
+
+    </div>
+
+
+    <!-- RESULT SCREEN -->
+
+    <div id="result">
+
+        <h1>QUIZ COMPLETE!</h1>
+
+        <p class="score" id="finalScore"></p>
+
+        <p id="message"></p>
+
+        <button class="restart-button"
+                onclick="restartQuiz()">
+            PLAY AGAIN
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   QUESTION DATABASE
+   ========================= */
+
+const questions = [
+
+{
+category: "Science",
+question: "Which phenomenon is responsible for the blue colour of the sky?",
+options: [
+"Reflection of sunlight",
+"Scattering of sunlight",
+"Refraction of sunlight",
+"Dispersion of sunlight"
+],
+answer: 1
+},
+
+{
+category: "Science",
+question: "An object moves with uniform acceleration. Which quantity changes by equal amounts in equal intervals of time?",
+options: [
+"Distance",
+"Velocity",
+"Displacement",
+"Acceleration"
+],
+answer: 1
+},
+
+{
+category: "Science",
+question: "Which element has the electronic configuration 2,8,8,2?",
+options: [
+"Magnesium",
+"Calcium",
+"Potassium",
+"Argon"
+],
+answer: 1
+},
+
+{
+category: "Science",
+question: "Which organelle is mainly responsible for cellular respiration?",
+options: [
+"Ribosome",
+"Mitochondrion",
+"Golgi apparatus",
+"Vacuole"
+],
+answer: 1
+},
+
+{
+category: "Science",
+question: "If the velocity of an object becomes zero at an instant, its acceleration at that instant:",
+options: [
+"Must be zero",
+"Must be negative",
+"May be non-zero",
+"Must be positive"
+],
+answer: 2
+},
+
+{
+category: "History",
+question: "The Permanent Settlement was introduced in Bengal in 1793 by:",
+options: [
+"Lord Dalhousie",
+"Lord Cornwallis",
+"Lord Wellesley",
+"Lord Curzon"
+],
+answer: 1
+},
+
+{
+category: "History",
+question: "The Non-Cooperation Movement was withdrawn following the:",
+options: [
+"Jallianwala Bagh incident",
+"Chauri Chaura incident",
+"Dandi March",
+"Simon Commission"
+],
+answer: 1
+},
+
+{
+category: "History",
+question: "Who founded the Maurya Empire?",
+options: [
+"Ashoka",
+"Bindusara",
+"Chandragupta Maurya",
+"Harshavardhana"
+],
+answer: 2
+},
+
+{
+category: "History",
+question: "The Indian National Congress was founded in:",
+options: [
+"1885",
+"1905",
+"1919",
+"1942"
+],
+answer: 0
+},
+
+{
+category: "History",
+question: "The immediate cause of the Revolt of 1857 was connected with:",
+options: [
+"The salt tax",
+"Enfield rifle cartridges",
+"The Permanent Settlement",
+"The Vernacular Press Act"
+],
+answer: 1
+},
+
+{
+category: "Geography",
+question: "Which Indian state has the longest coastline?",
+options: [
+"Odisha",
+"Gujarat",
+"Andhra Pradesh",
+"Tamil Nadu"
+],
+answer: 1
+},
+
+{
+category: "Geography",
+question: "The Deccan Plateau is largely composed of rocks formed by:",
+options: [
+"Glacial deposits",
+"Volcanic lava",
+"River sediments",
+"Wind deposits"
+],
+answer: 1
+},
+
+{
+category: "Geography",
+question: "Which river is popularly known as the 'Sorrow of Bihar'?",
+options: [
+"Ganga",
+"Kosi",
+"Son",
+"Gandak"
+],
+answer: 1
+},
+
+{
+category: "Geography",
+question: "The Tropic of Cancer passes through how many states of India?",
+options: [
+"6",
+"7",
+"8",
+"9"
+],
+answer: 2
+},
+
+{
+category: "Geography",
+question: "Which soil is especially suitable for cotton cultivation?",
+options: [
+"Black soil",
+"Laterite soil",
+"Mountain soil",
+"Desert soil"
+],
+answer: 0
+},
+
+{
+category: "Polity",
+question: "Fundamental Rights are contained in which part of the Constitution of India?",
+options: [
+"Part II",
+"Part III",
+"Part IV",
+"Part V"
+],
+answer: 1
+},
+
+{
+category: "Polity",
+question: "The minimum age required to become a member of the Lok Sabha is:",
+options: [
+"18 years",
+"21 years",
+"25 years",
+"30 years"
+],
+answer: 2
+},
+
+{
+category: "Polity",
+question: "The Rajya Sabha is also known as the:",
+options: [
+"House of People",
+"Council of States",
+"House of Citizens",
+"Federal House"
+],
+answer: 1
+},
+
+{
+category: "Polity",
+question: "Who is the constitutional head of an Indian state?",
+options: [
+"Chief Minister",
+"Governor",
+"President",
+"Speaker"
+],
+answer: 1
+},
+
+{
+category: "Polity",
+question: "The Constitution of India came into force on:",
+options: [
+"15 August 1947",
+"26 November 1949",
+"26 January 1950",
+"2 October 1950"
+],
+answer: 2
+},
+
+{
+category: "Space",
+question: "What was India's first artificial satellite?",
+options: [
+"Rohini",
+"Aryabhata",
+"Bhaskara-I",
+"INSAT-1A"
+],
+answer: 1
+},
+
+{
+category: "Space",
+question: "Aditya-L1 is primarily designed to study the:",
+options: [
+"Moon",
+"Sun",
+"Mars",
+"Jupiter"
+],
+answer: 1
+},
+
+{
+category: "Space",
+question: "Chandrayaan-1 was India's first mission to the:",
+options: [
+"Sun",
+"Moon",
+"Mars",
+"Venus"
+],
+answer: 1
+},
+
+{
+category: "Space",
+question: "Which Indian mission successfully demonstrated a controlled soft landing near the Moon's south polar region in 2023?",
+options: [
+"Chandrayaan-1",
+"Mangalyaan",
+"Chandrayaan-2",
+"Chandrayaan-3"
+],
+answer: 3
+},
+
+{
+category: "Environment",
+question: "The ozone layer is mainly located in the:",
+options: [
+"Troposphere",
+"Stratosphere",
+"Mesosphere",
+"Thermosphere"
+],
+answer: 1
+},
+
+{
+category: "Environment",
+question: "Which gas is a major contributor to the enhanced greenhouse effect caused by human activities?",
+options: [
+"Oxygen",
+"Carbon dioxide",
+"Helium",
+"Neon"
+],
+answer: 1
+},
+
+{
+category: "Technology",
+question: "What does CPU stand for?",
+options: [
+"Central Processing Unit",
+"Computer Processing Utility",
+"Central Program Unit",
+"Computer Primary Unit"
+],
+answer: 0
+},
+
+{
+category: "Technology & AI",
+question: "Which field enables computers to learn patterns from data?",
+options: [
+"Machine Learning",
+"Web Design",
+"Data Entry",
+"File Compression"
+],
+answer: 0
+},
+
+{
+category: "India & Odisha",
+question: "Which major river is strongly associated with the formation of the Mahanadi delta in Odisha?",
+options: [
+"Mahanadi",
+"Narmada",
+"Tapti",
+"Sabarmati"
+],
+answer: 0
+},
+
+{
+category: "Culture",
+question: "Odissi is a classical dance tradition associated with:",
+options: [
+"Odisha",
+"Kerala",
+"Punjab",
+"Assam"
+],
+answer: 0
+}
+
+];
+
+
+/* =========================
+   VARIABLES
+   ========================= */
+
+let currentQuestion = 0;
+let score = 0;
+let timeLeft = 10;
+let timer;
+
+
+/* =========================
+   START QUIZ
+   ========================= */
+
+function startQuiz() {
+
+    document.getElementById("home").style.display = "none";
+
+    document.getElementById("quiz").style.display = "block";
+
+    currentQuestion = 0;
+    score = 0;
+
+    showQuestion();
+}
+
+
+/* =========================
+   SHOW QUESTION
+   ========================= */
+
+function showQuestion() {
+
+    clearInterval(timer);
+
+    timeLeft = 10;
+
+    document.getElementById("time").innerText = timeLeft;
+
+    const q = questions[currentQuestion];
+
+    document.getElementById("questionNumber").innerText =
+        "Question " +
+        (currentQuestion + 1) +
+        "/" +
+        questions.length;
+
+    document.getElementById("category").innerText =
+        q.category;
+
+    document.getElementById("question").innerText =
+        q.question;
+
+    const optionsDiv =
+        document.getElementById("options");
+
+    optionsDiv.innerHTML = "";
+
+    q.options.forEach(function(option, index) {
+
+        const button =
+            document.createElement("button");
+
+        button.innerText =
+            String.fromCharCode(65 + index) +
+            ". " +
+            option;
+
+        button.className = "option";
+
+        button.onclick = function() {
+
+            checkAnswer(button, index);
+
+        };
+
+        optionsDiv.appendChild(button);
+
+    });
+
+    document.getElementById("nextButton").style.display =
+        "none";
+
+    startTimer();
+}
+
+
+/* =========================
+   TIMER
+   ========================= */
+
+function startTimer() {
+
+    timer = setInterval(function() {
+
+        timeLeft--;
+
+        document.getElementById("time").innerText =
+            timeLeft;
+
+        if (timeLeft <= 0) {
+
+            clearInterval(timer);
+
+            revealAnswer();
+
+        }
+
+    }, 1000);
+}
+
+
+/* =========================
+   CHECK ANSWER
+   ========================= */
+
+function checkAnswer(button, selected) {
+
+    clearInterval(timer);
+
+    const correct =
+        questions[currentQuestion].answer;
+
+    const buttons =
+        document.querySelectorAll(".option");
+
+    buttons.forEach(function(btn) {
+
+        btn.disabled = true;
+
+    });
+
+    if (selected === correct) {
+
+        score++;
+
+        button.classList.add("correct");
+
+    } else {
+
+        button.classList.add("wrong");
+
+        buttons[correct].classList.add("correct");
+
+    }
+
+    document.getElementById("nextButton").style.display =
+        "block";
+}
+
+
+/* =========================
+   TIME UP
+   ========================= */
+
+function revealAnswer() {
+
+    const correct =
+        questions[currentQuestion].answer;
+
+    const buttons =
+        document.querySelectorAll(".option");
+
+    buttons.forEach(function(btn) {
+
+        btn.disabled = true;
+
+    });
+
+    buttons[correct].classList.add("correct");
+
+    document.getElementById("nextButton").style.display =
+        "block";
+}
+
+
+/* =========================
+   NEXT QUESTION
+   ========================= */
+
+function nextQuestion() {
+
+    currentQuestion++;
+
+    if (currentQuestion < questions.length) {
+
+        showQuestion();
+
+    } else {
+
+        showResult();
+
+    }
+}
+
+
+/* =========================
+   RESULT
+   ========================= */
+
+function showResult() {
+
+    clearInterval(timer);
+
+    document.getElementById("quiz").style.display =
+        "none";
+
+    document.getElementById("result").style.display =
+        "block";
+
+    document.getElementById("finalScore").innerText =
+        score + " / " + questions.length;
+
+    let percentage =
+        Math.round((score / questions.length) * 100);
+
+    let message = "";
+
+    if (percentage >= 90) {
+        message = "Excellent! Your brain is on fire!";
+    }
+    else if (percentage >= 70) {
+        message = "Great job! Keep challenging yourself.";
+    }
+    else if (percentage >= 50) {
+        message = "Good attempt! Practice more.";
+    }
+    else {
+        message = "Keep learning and try again!";
+    }
+
+    document.getElementById("message").innerText =
+        percentage + "% — " + message;
+}
+
+
+/* =========================
+   RESTART
+   ========================= */
+
+function restartQuiz() {
+
+    document.getElementById("result").style.display =
+        "none";
+
+    document.getElementById("home").style.display =
+        "block";
+
+}
+
+</script>
+
+</body>
+</html>
